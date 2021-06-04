@@ -27,7 +27,7 @@ namespace UESourceAnalyzer
                 var lines = File.ReadAllLines(file);
                 for (var i = 0; i < lines.Length; ++i)
                 {
-                    if (propertyCheck.IsMatch(lines[i]))
+                    if (propertyCheck.IsMatch(i, lines))
                     {
                         if (!propertyCheck.IsValid(i, lines))
                         {
@@ -51,7 +51,7 @@ namespace UESourceAnalyzer
                 }
             }
 
-            File.WriteAllLines(Path.Combine(args[0], "uproperty.txt"), outputs.ToArray(), Encoding.UTF8);
+            File.WriteAllLines(Path.Combine(args[0], "PropertyCheck.txt"), outputs.ToArray(), Encoding.UTF8);
         }
     }
 }

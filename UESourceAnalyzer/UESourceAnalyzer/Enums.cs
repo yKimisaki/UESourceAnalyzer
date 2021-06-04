@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UESourceAnalyzer
 {
-    enum FileType
+    public enum FileType
     {
         All0,
         CppHeader,

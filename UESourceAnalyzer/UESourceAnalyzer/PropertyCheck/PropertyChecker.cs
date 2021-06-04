@@ -4,23 +4,65 @@ using System.Linq;
 
 namespace UESourceAnalyzer.PropertyCheck
 {
-    internal class PropertyChecker
+    public class PropertyChecker
     {
         public FileType TargetFileType => FileType.CppHeader;
 
-        public bool IsMatch(in string line)
+        public bool IsMatch(in int lineNumber, in IReadOnlyList<string> allLines)
         {
+            int nearestCommentStart = lineNumber;
+            int nearestCommentEnd = lineNumber;
+            for (var i = lineNumber; i >= 0; --i)
+            {
+                if (allLines[i].Contains("/*") && !IsMatchCore(allLines[i]))
+                {
+                    nearestCommentStart = i;
+                    break;
+                }
+            }
+            for (var i = lineNumber; i < allLines.Count; ++i)
+            {
+                if (allLines[i].Contains("*/") && !IsMatchCore(allLines[i]))
+                {
+                    nearestCommentEnd = i;
+                    break;
+                }
+            }
+            if (nearestCommentStart <= lineNumber && lineNumber <= nearestCommentEnd)
+            {
+                return false;
+            }
+
+            return IsMatchCore(allLines[lineNumber]);
+        }
+
+        bool IsMatchCore(in string line)
+        {
+            if (line.Contains("/*"))
+            {
+                return IsMatchCore(line.Split("/*")[0]);
+            }
+            if (line.Contains("*/"))
+            {
+                return IsMatchCore(line.Split("*/")[1]);
+            }
+            if (line.Contains("//"))
+            {
+                return IsMatchCore(line.Split("//")[0]);
+            }
+
             if (line.Contains("#") || !line.Contains(";") || !line.Contains("*"))
             {
                 return false;
             }
 
+            // 関数は排除
             if (line.Contains("virtual") || line.Contains("override") || line.Contains(");") || line.Contains("];")
                 || line.Contains("UFUNCTION") || line.Contains("}") || line.Contains("const;"))
             {
                 return false;
-            }                    
-            
+            }
+
             // TArrayとTMapはチェック
             if (line.Contains("TArray<A") || line.Contains("TArray<U") || line.Contains("TMap<"))
             {
@@ -64,9 +106,12 @@ namespace UESourceAnalyzer.PropertyCheck
                 return true;
             }
 
-            if (previous.Trim().StartsWith("//") && lineNumber > 3)
+            if (lineNumber > 3)
             {
-                return allLines[lineNumber - 2].Contains("UPROPERTY");
+                if (previous.Trim().StartsWith("//") || (previous.Trim().StartsWith("/*") && previous.Trim().EndsWith("*/")))
+                {
+                    return allLines[lineNumber - 2].Contains("UPROPERTY");
+                }
             }
 
             return false;
