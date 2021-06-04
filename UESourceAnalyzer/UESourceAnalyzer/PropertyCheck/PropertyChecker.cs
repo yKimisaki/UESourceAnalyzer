@@ -10,8 +10,8 @@ namespace UESourceAnalyzer.PropertyCheck
 
         public bool IsMatch(in int lineNumber, in IReadOnlyList<string> allLines)
         {
-            int nearestCommentStart = lineNumber;
-            int nearestCommentEnd = lineNumber;
+            int? nearestCommentStart = null;
+            int? nearestCommentEnd = null;
             for (var i = lineNumber; i >= 0; --i)
             {
                 if (allLines[i].Contains("/*") && !IsMatchCore(allLines[i]))
@@ -28,7 +28,7 @@ namespace UESourceAnalyzer.PropertyCheck
                     break;
                 }
             }
-            if (nearestCommentStart <= lineNumber && lineNumber <= nearestCommentEnd)
+            if (nearestCommentStart.HasValue && nearestCommentEnd .HasValue &&  nearestCommentStart <= lineNumber && lineNumber <= nearestCommentEnd)
             {
                 return false;
             }

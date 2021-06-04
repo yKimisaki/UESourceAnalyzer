@@ -23,10 +23,6 @@ namespace UESourceAnalyzerTest
 
                 if (!propertyChecker.IsMatch(i, lines))
                 {
-                    if (line.Contains("NG"))
-                    {
-                    }
-
                     continue;
                 }
 
