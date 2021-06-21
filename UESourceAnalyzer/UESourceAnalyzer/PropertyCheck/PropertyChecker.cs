@@ -14,18 +14,26 @@ namespace UESourceAnalyzer.PropertyCheck
             int? nearestCommentEnd = null;
             for (var i = lineNumber; i >= 0; --i)
             {
+                if (allLines[i].Contains("*/") && !IsMatchCore(allLines[i]))
+                {
+                    nearestCommentEnd = i;
+                    continue;
+                }
                 if (allLines[i].Contains("/*") && !IsMatchCore(allLines[i]))
                 {
                     nearestCommentStart = i;
                     break;
                 }
             }
-            for (var i = lineNumber; i < allLines.Count; ++i)
+            if (!nearestCommentEnd.HasValue)
             {
-                if (allLines[i].Contains("*/") && !IsMatchCore(allLines[i]))
+                for (var i = lineNumber; i < allLines.Count; ++i)
                 {
-                    nearestCommentEnd = i;
-                    break;
+                    if (allLines[i].Contains("*/") && !IsMatchCore(allLines[i]))
+                    {
+                        nearestCommentEnd = i;
+                        break;
+                    }
                 }
             }
             if (nearestCommentStart.HasValue && nearestCommentEnd .HasValue &&  nearestCommentStart <= lineNumber && lineNumber <= nearestCommentEnd)
@@ -90,8 +98,29 @@ namespace UESourceAnalyzer.PropertyCheck
 
             var previous = allLines[lineNumber - 1];
             var current = allLines[lineNumber];
+
+            bool IsValidUpropertyLine(string line, bool isCurrent)
+            {
+                if (!line.Contains("UPROPERTY"))
+                {
+                    return false;
+                }
+                if (line.Contains("//") && line.IndexOf("//") < line.IndexOf("UPROPERTY"))
+                {
+                    return false;
+                }
+                if (line.Contains("/*") && line.IndexOf("/*") < line.IndexOf("UPROPERTY"))
+                {
+                    return false;
+                }
+                if (line.IndexOf("UPROPERTY") < line.IndexOf(";"))
+                {
+                    return isCurrent;
+                }
+                return true;
+            };
             
-            if (current.Contains("UPROPERTY"))
+            if (IsValidUpropertyLine(current, true))
             {
                 return true;
             }
@@ -101,7 +130,7 @@ namespace UESourceAnalyzer.PropertyCheck
                 return true;
             }
 
-            if (previous.Contains("UPROPERTY"))
+            if (IsValidUpropertyLine(previous, false))
             {
                 return true;
             }
@@ -110,7 +139,7 @@ namespace UESourceAnalyzer.PropertyCheck
             {
                 if (previous.Trim().StartsWith("//") || (previous.Trim().StartsWith("/*") && previous.Trim().EndsWith("*/")))
                 {
-                    return allLines[lineNumber - 2].Contains("UPROPERTY");
+                    return IsValidUpropertyLine(allLines[lineNumber - 2], false);
                 }
             }
 

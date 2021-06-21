@@ -95,6 +95,11 @@ class UPROPERTY_API UProperty : public UObject
 
     /* UPROPERTY() */ UHoge* NG;
 
+
+
+    UPROPERTY() UHoge* OK;
+    UHoge* NG;
+
     TArray<UHoge*> NG;
     
     UPROPERTY()
@@ -156,6 +161,11 @@ class UPROPERTY_API UProperty : public UObject
     TMap<FHoge, AHoge*> NG;
     UPROPERTY()
         TMap<FHoge, AHoge*> OK;
+
+
+
+    UPROPERTY() AHoge* OK;
+    AHoge* NG;
 
 };";
     }
